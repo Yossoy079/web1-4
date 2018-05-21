@@ -4,51 +4,52 @@ using UnityEngine;
 
 public class RoulatteController : MonoBehaviour {
 
-    float rotSpeed = 0;
-    BOADSTATE roulatte_state = BOADSTATE.STOP;
     enum BOADSTATE
     {
-        STOP,
         MOVE,
         BRAKE,
+        STOP,
     }
+
+    //外部変数
+    float rotSpeed = 0;
+    BOADSTATE roulatte_state = BOADSTATE.STOP;
 
     // Use this for initialization
     void Start () {
-
+        
     }
 
     // Update is called once per frame
     void Update() {
-        bool click = false;
-        if (Input.GetMouseButtonDown(0) && click == false)
+        if (Input.GetMouseButtonDown(0))
         {
-            if (roulatte_state == BOADSTATE.BRAKE)
+            if (roulatte_state == BOADSTATE.STOP)
             {
-                roulatte_state = BOADSTATE.STOP;
+                roulatte_state = BOADSTATE.MOVE;
             }
             else
             {
                 roulatte_state++;
             }
-            click = true;
         }
-        else
+        if (Input.GetMouseButtonDown(1))
         {
-            click = false;
+            roulatte_state = BOADSTATE.STOP;
         }
 
 
         switch (roulatte_state)
         {
-            case BOADSTATE.STOP:
-                this.rotSpeed = 0;
-                break;
             case BOADSTATE.MOVE:
                 this.rotSpeed = 10;
                 break;
             case BOADSTATE.BRAKE:
-                this.rotSpeed *= 0.98f;
+                this.rotSpeed *= 0.96f;
+                if (rotSpeed < 0.01) roulatte_state = BOADSTATE.STOP;
+                break;
+            case BOADSTATE.STOP:
+                this.rotSpeed = 0;
                 break;
             default:
                 this.rotSpeed = 0;
