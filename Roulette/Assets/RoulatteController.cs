@@ -6,9 +6,9 @@ public class RoulatteController : MonoBehaviour {
 
     enum BOADSTATE
     {
+        STOP,
         MOVE,
         BRAKE,
-        STOP,
     }
 
     //外部変数
@@ -20,43 +20,67 @@ public class RoulatteController : MonoBehaviour {
         
     }
 
+    BOADSTATE UpdateStop(bool left_click) {
+         if (left_click)
+         {
+             return BOADSTATE.MOVE;
+         }
+        
+         return roulatte_state;
+    }
+    BOADSTATE UpdateMove(bool left_click) {
+        if (left_click)
+        {
+            return BOADSTATE.BRAKE;
+        }
+        
+        this.rotSpeed = 10;
+        transform.Rotate(0, 0, this.rotSpeed);
+        
+        return roulatte_state;
+    }
+    BOADSTATE UpdateBreak(bool left_click) {
+        this.rotSpeed *= 0.96f;
+        if (rotSpeed < 0.01){
+            this.rotSpeed = 0;
+            return BOADSTATE.STOP;
+        }
+        transform.Rotate(0, 0, this.rotSpeed);
+        return roulatte_state;
+    }
+    
     // Update is called once per frame
     void Update() {
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (roulatte_state == BOADSTATE.STOP)
-            {
-                roulatte_state = BOADSTATE.MOVE;
-            }
-            else
-            {
-                roulatte_state++;
-            }
-        }
+        // 強制停止
         if (Input.GetMouseButtonDown(1))
         {
             roulatte_state = BOADSTATE.STOP;
         }
-
-
+        
+        BOADSTATE s;
+        bool left_click = Input.GetMouseButtonDown(0);
+UPDATE_STATE:
         switch (roulatte_state)
         {
+            case BOADSTATE.STOP:
+                s = UpdateStop(left_click);
+                break;
             case BOADSTATE.MOVE:
-                this.rotSpeed = 10;
+                s = UpdateMove(left_click);
                 break;
             case BOADSTATE.BRAKE:
-                this.rotSpeed *= 0.96f;
-                if (rotSpeed < 0.01) roulatte_state = BOADSTATE.STOP;
-                break;
-            case BOADSTATE.STOP:
-                this.rotSpeed = 0;
+                s = UpdateBreak(left_click);
                 break;
             default:
-                this.rotSpeed = 0;
                 Debug.Log("ERROR:ルーレットの状態にエラーが出ました。");
                 break;
         }
-
-        transform.Rotate(0, 0, this.rotSpeed);
+        
+        // 状態が変わったら、次の状態の処理を一度回す
+        if(s != roulatte_state){
+            roulatte_state = s;
+            left_click = false;
+            goto UPDATE_STATE;
+        }
     }
 }
